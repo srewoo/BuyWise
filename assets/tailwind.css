@@ -1,0 +1,89 @@
+@import 'tailwindcss';
+
+/* Explicit content sources — required because the gallery's Vite root is ./gallery,
+   so Tailwind's auto-detection would otherwise miss ../components, ../entrypoints, etc.
+   Paths are relative to this file (assets/). */
+@source '../components';
+@source '../entrypoints';
+@source '../lib';
+@source '../gallery';
+
+/* BuyWise — design system tokens (mirrors the Figma "BuyWise Tokens" collection). */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* surfaces & text */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-2: #f1f5f9;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-faint: #94a3b8;
+  --color-line: #e2e8f0;
+
+  /* brand — BuyWise blue (matches the logo bag); green below is the Buy/positive accent */
+  --color-primary: #2563eb;
+  --color-primary-600: #1d4ed8;
+  --color-primary-soft: #dbeafe;
+  --color-brand-grad-from: #3b82f6;
+  --color-brand-grad-to: #1d4ed8;
+
+  /* verdicts */
+  --color-buy: #059669;
+  --color-buy-soft: #d1fae5;
+  --color-consider: #d97706;
+  --color-consider-soft: #fef3c7;
+  --color-skip: #dc2626;
+  --color-skip-soft: #fee2e2;
+
+  /* source brands */
+  --color-reddit: #ff4500;
+  --color-youtube: #ff0000;
+  --color-amazon: #ff9900;
+  --color-expert: #2563eb;
+  --color-star: #f59e0b;
+
+  --radius-card: 16px;
+  --radius-sm: 10px;
+
+  --shadow-panel: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-cta: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Slim, unobtrusive scrollbars for the 400px panel */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

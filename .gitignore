@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output (WXT) + generated types
+output/
+.output/
+.wxt/
+stats.html
+
+# tests / coverage
+coverage/
+.vitest/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# logs & OS
+*.log
+.DS_Store
+
+# local scratch / preview artifacts (screenshots live at repo root; real assets are in public/ & assets/)
+.design-snaps/
+.playwright-mcp/
+/*.png
