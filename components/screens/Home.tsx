@@ -2,6 +2,7 @@ import { Search, Clock, TrendingUp, ScanLine, Settings as SettingsIcon } from 'l
 import { BrandBar } from '@/components/Shell';
 import { Card } from '@/components/ui';
 import { RegionPicker } from '@/components/RegionPicker';
+import { AppFooter } from '@/components/Footer';
 import { DEFAULT_REGION } from '@/lib/regions';
 
 const TRENDING = ['iPhone 17 Pro', 'Sony WH-1000XM6', 'Samsung S26 Ultra', 'Dyson V15', 'Steam Deck OLED'];
@@ -107,6 +108,7 @@ export function Home({
           </div>
         </Card>
       </div>
+      <AppFooter />
     </div>
   );
 }

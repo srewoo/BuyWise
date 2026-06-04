@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BuyWise — Help &amp; Setup</title>
+    <style>
+      :root { --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --primary:#2563eb; --bg:#f8fafc; }
+      * { box-sizing: border-box; }
+      body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,Segoe UI,Inter,sans-serif; }
+      .wrap { max-width:760px; margin:0 auto; padding:48px 24px 80px; }
+      header { display:flex; align-items:center; gap:12px; }
+      .logo { width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:grid;place-items:center;color:#fff;font-weight:800; }
+      h1 { font-size:28px; margin:16px 0 4px; }
+      h2 { font-size:19px; margin:30px 0 8px; }
+      h3 { font-size:15px; margin:18px 0 4px; }
+      p, li { color:var(--muted); }
+      a { color:var(--primary); }
+      ol li, ul li { margin:4px 0; }
+      .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-top:16px; }
+      .pill { display:inline-block; background:#dbeafe; color:#1d4ed8; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:600; }
+      code { background:#eef2ff; padding:1px 6px; border-radius:6px; font-size:14px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header><span class="logo">B</span><strong>BuyWise</strong></header>
+      <h1>Help &amp; Setup</h1>
+      <p>BuyWise is your AI buying advisor. Search any product — or open it on Amazon/Flipkart — and get a clear
+      <strong>Buy / Consider / Skip</strong> verdict grounded in real reviews and discussions.</p>
+
+      <div class="card">
+        <span class="pill">Required</span>
+        <h2 style="margin-top:10px">1. Add your OpenAI API key</h2>
+        <ol>
+          <li>Open <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">platform.openai.com/api-keys</a> and sign in.</li>
+          <li>Click <strong>Create new secret key</strong>, copy it (starts with <code>sk-</code>).</li>
+          <li>In BuyWise, open <strong>Settings</strong> and paste it into <strong>OpenAI key</strong>.</li>
+        </ol>
+        <p>Your key is stored only in your browser and sent directly to OpenAI. You pay only your own usage
+        (typically a few cents per fresh analysis; cached for 24h).</p>
+      </div>
+
+      <div class="card">
+        <span class="pill">Optional · free</span>
+        <h2 style="margin-top:10px">2. Add a YouTube Data API key (richer reviews)</h2>
+        <ol>
+          <li>Open the <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noreferrer">Google Cloud Console</a> and sign in.</li>
+          <li>Create a project → <strong>APIs &amp; Services → Library</strong> → enable <strong>YouTube Data API v3</strong>.</li>
+          <li><strong>Credentials → Create credentials → API key</strong>, then paste it into BuyWise Settings.</li>
+        </ol>
+        <p>No billing required for the free quota (~10,000 units/day). Reddit needs no key.</p>
+      </div>
+
+      <h2>How to use it</h2>
+      <ol>
+        <li>Click the BuyWise icon to open the side panel (it opens only in the current tab).</li>
+        <li>Search a product, or on an Amazon/Flipkart product page tap <strong>“Detected on this page”</strong>.</li>
+        <li>Read the verdict, then use the tiles to explore Pros, Cons, Community, Deals, Trust, Q&amp;A, and Alternatives.</li>
+        <li>Ask follow-up questions in <strong>Q&amp;A</strong>, or tap <strong>Analyze</strong> on any alternative to compare it.</li>
+      </ol>
+
+      <h2>Deep Research mode</h2>
+      <p>Turn it on in Settings for a multi-agent investigation: BuyWise plans research angles, searches the web
+      (via OpenAI), reads Reddit discussion threads, fact-checks the findings, then synthesizes a grounded verdict
+      with citations. It's slower (~30–60s) and uses more of your OpenAI usage, but it's the most thorough.</p>
+
+      <h2>Region</h2>
+      <p>Pick your region (US or India) in Settings or via the flag chip on Home — it sets the currency, retailers,
+      and regional sources used in verdicts.</p>
+
+      <h2>Grounding &amp; honesty</h2>
+      <p>Every verdict shows a <strong>Sources</strong> card: which sources were actually used and how many, with
+      clickable citations. If little was fetched, it says so (“AI estimate”) rather than faking confidence.</p>
+
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>“Demo verdict” banner:</strong> add your OpenAI key in Settings for a live analysis.</li>
+        <li><strong>No price shown:</strong> open the product on its store page so BuyWise can read and track it.</li>
+        <li><strong>Sources show “no results”:</strong> the source was rate-limited or returned nothing — the
+        verdict honestly reflects only what was found.</li>
+      </ul>
+
+      <p style="margin-top:28px"><a href="privacy.html">Privacy Policy</a></p>
+    </div>
+  </body>
+</html>

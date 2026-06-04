@@ -16,15 +16,17 @@ export default defineConfig({
       'AI buying advisor: instant Buy / Consider / Skip verdict from real reviews, deals, and community sentiment.',
     version: '0.1.0',
     minimum_chrome_version: '116',
-    permissions: ['sidePanel', 'tabs', 'storage', 'scripting'],
+    // Minimal permissions: only what the code actually uses.
+    //  - sidePanel: the whole UI; tabs: scope the panel to one tab + read active tab for prefill;
+    //    storage: persist keys/prefs/cache locally. (no `scripting` — the content script is
+    //    statically declared via content_scripts and needs no scripting permission.)
+    permissions: ['sidePanel', 'tabs', 'storage'],
+    // Only hosts the extension itself fetches from. Amazon/Flipkart are NOT here — the content
+    // script reads those pages via its own `matches`, which doesn't need a host permission.
     host_permissions: [
       'https://api.openai.com/*',
       'https://www.googleapis.com/*',
       'https://www.reddit.com/*',
-      'https://oauth.reddit.com/*',
-      'https://*.amazon.in/*',
-      'https://*.amazon.com/*',
-      'https://*.flipkart.com/*',
       'https://api.perplexity.ai/*',
     ],
     icons: {

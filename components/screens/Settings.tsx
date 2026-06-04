@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyRound, Cpu, Bell, Telescope, Check, HelpCircle, ExternalLink, ChevronDown, Globe } from 'lucide-react';
 import { AppBar, Panel, Body } from '@/components/Shell';
 import { Card, Eyebrow } from '@/components/ui';
+import { AppFooter } from '@/components/Footer';
 import { storage, DEFAULT_SETTINGS, type Settings as S } from '@/lib/storage';
 import { REGIONS, detectRegion, getRegion } from '@/lib/regions';
 
@@ -239,6 +240,7 @@ export function Settings({ onBack }: { onBack?: () => void }) {
           </p>
         </Card>
       </Body>
+      <AppFooter />
     </Panel>
   );
 }
