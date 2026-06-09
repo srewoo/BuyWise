@@ -17,10 +17,12 @@ export default defineConfig({
     version: '0.1.0',
     minimum_chrome_version: '116',
     // Minimal permissions: only what the code actually uses.
-    //  - sidePanel: the whole UI; tabs: scope the panel to one tab + read active tab for prefill;
-    //    storage: persist keys/prefs/cache locally. (no `scripting` — the content script is
-    //    statically declared via content_scripts and needs no scripting permission.)
-    permissions: ['sidePanel', 'tabs', 'storage'],
+    //  - sidePanel: the whole UI; storage: persist keys/prefs/cache locally.
+    // NOTE: no `tabs` — we only read `tab.id` and `changeInfo.status` and call unprivileged
+    // tabs APIs (create/query/onActivated/onUpdated/onRemoved). The `tabs` permission only
+    // gates privileged props (url/title/pendingUrl/favIconUrl), which we never access.
+    // (No `scripting` either — the content script is statically declared via content_scripts.)
+    permissions: ['sidePanel', 'storage'],
     // Only hosts the extension itself fetches from. Amazon/Flipkart are NOT here — the content
     // script reads those pages via its own `matches`, which doesn't need a host permission.
     host_permissions: [
