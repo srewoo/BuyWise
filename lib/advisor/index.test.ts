@@ -77,6 +77,21 @@ describe('runAdvisor', () => {
     expect(r.coverage.some((c) => c.source === 'retail')).toBe(true); // on-page reviews counted
   });
 
+  it('flags an inflated claimed MRP as a fake deal', async () => {
+    await storage.saveSettings({ openaiKey: 'sk-test' });
+    vi.stubGlobal('fetch', liveFetch());
+    // First visit seeds history at 1000; current page claims ₹3000 "original" at 1000 → fake.
+    await runAdvisor('Inflated MRP Phone', () => {}, new AbortController().signal, {
+      pagePrice: { amount: 1000, currency: 'INR' },
+    });
+    const r = await runAdvisor('Inflated MRP Phone', () => {}, new AbortController().signal, {
+      pagePrice: { amount: 1000, currency: 'INR' },
+      pageListPrice: 3000,
+    });
+    expect(r.verdict.deals.dealTruth?.status).toBe('inflated');
+    expect(r.verdict.deals.dealTruth?.claimedDiscountPct).toBe(67);
+  });
+
   it('serves a cached verdict on the second run (no page data)', async () => {
     await storage.saveSettings({ openaiKey: 'sk-test' });
     vi.stubGlobal('fetch', liveFetch());

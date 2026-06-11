@@ -66,6 +66,7 @@ export function App() {
           seedReviews: pageData.reviews,
           pageUrl: pageData.url,
           pagePrice: pageData.price,
+          pageListPrice: pageData.listPrice,
           retailer: pageData.retailer,
           rating: pageData.rating,
         }
@@ -102,6 +103,7 @@ export function App() {
     url?: string;
     reviews?: { title?: string; text: string; rating?: number; verified?: boolean }[];
     price?: { amount: number; currency: string };
+    listPrice?: number;
     retailer?: string;
     rating?: { average?: number; count?: number };
   };

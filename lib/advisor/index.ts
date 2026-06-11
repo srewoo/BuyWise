@@ -9,6 +9,7 @@ import { computeTrust } from './trust';
 import { computeSentiment } from './sentiment';
 import { runAgentic } from './agent';
 import { priceHistory } from '@/lib/priceHistory';
+import { assessDealTruth } from '@/lib/dealTruth';
 import { getRegion } from '@/lib/regions';
 import type { DealInfo } from '@/lib/types';
 import type { Settings } from '@/lib/storage';
@@ -60,6 +61,8 @@ export interface AdviseOptions {
   pageUrl?: string;
   /** Current price read from the product page (powers real deals + self-built history). */
   pagePrice?: { amount: number; currency: string };
+  /** Struck-through "original"/MRP price the store advertises against (for deal-truth). */
+  pageListPrice?: number;
   retailer?: string;
   /** Aggregate rating shown on the product page. */
   rating?: { average?: number; count?: number };
@@ -110,6 +113,9 @@ async function buildDeals(product: string, settings: Settings, opts: AdviseOptio
       ? `This is the lowest price you've tracked (${currency} ${current.toLocaleString()}).`
       : `${currency} ${current.toLocaleString()} now — ${currency} ${(current - lowest).toLocaleString()} above your lowest tracked price (${currency} ${lowest.toLocaleString()}). History is built from your own visits.`;
 
+  // The "is this sale fake?" verdict — grounded in observed history + the page's claimed MRP.
+  const dealTruth = assessDealTruth(current, pts, opts.pageListPrice, currency);
+
   return {
     offers,
     currency,
@@ -117,6 +123,7 @@ async function buildDeals(product: string, settings: Settings, opts: AdviseOptio
     lowestEver: lowest,
     dropProbability,
     advice,
+    dealTruth,
   };
 }
 

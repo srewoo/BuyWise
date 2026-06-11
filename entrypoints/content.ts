@@ -30,6 +30,19 @@ function extractPrice(isAmazon: boolean): OnPagePrice | null {
   return parsePrice(raw);
 }
 
+/**
+ * The struck-through "original"/MRP price the store advertises the discount against.
+ * We capture it so deal-truth can flag when it's inflated above what the product really sells for.
+ */
+function extractListPrice(isAmazon: boolean): number | undefined {
+  const sel = isAmazon
+    ? '.basisPrice .a-offscreen, span.a-price.a-text-price .a-offscreen, .a-text-price[data-a-strike="true"] .a-offscreen, #listPrice, #priceblock_listprice'
+    : '.yRaY8j, .yRaY8j.A6+E6v, ._3I9_wc._2p6lqe, ._3I9_wc'; // Flipkart current + legacy strike-through MRP
+  const raw = document.querySelector(sel)?.textContent?.trim() ?? '';
+  const parsed = parsePrice(raw);
+  return parsed?.amount;
+}
+
 function retailerName(): string {
   const h = location.hostname;
   if (h.includes('amazon.in')) return 'Amazon.in';
@@ -122,6 +135,7 @@ export default defineContentScript({
             url: location.href,
             reviews,
             price: extractPrice(isAmazon),
+            listPrice: extractListPrice(isAmazon),
             retailer: retailerName(),
             rating: extractAggregate(isAmazon),
           },

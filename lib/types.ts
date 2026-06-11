@@ -72,6 +72,18 @@ export const TrustBreakdown = z.object({
 export type TrustBreakdown = z.infer<typeof TrustBreakdown>;
 
 export const PriceHistoryPoint = z.object({ t: z.string(), price: z.number() });
+
+/** Verdict on whether the store's advertised "deal" is genuine vs an inflated fake. */
+export const DealTruth = z.object({
+  status: z.enum(['real', 'inflated', 'unverified']),
+  claimedDiscountPct: z.number().optional(),
+  realDiscountPct: z.number().optional(),
+  trueLow: z.number().optional(),
+  trueLowAt: z.string().optional(),
+  message: z.string(),
+});
+export type DealTruth = z.infer<typeof DealTruth>;
+
 export const DealInfo = z.object({
   offers: z.array(PriceOffer),
   lowestEver: z.number().optional(),
@@ -79,6 +91,8 @@ export const DealInfo = z.object({
   history: z.array(PriceHistoryPoint),
   dropProbability: z.number().min(0).max(1),
   advice: z.string(),
+  /** Optional: present once we have a current price to judge against history. */
+  dealTruth: DealTruth.optional(),
 });
 export type DealInfo = z.infer<typeof DealInfo>;
 

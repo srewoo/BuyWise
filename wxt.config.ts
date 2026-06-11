@@ -14,7 +14,7 @@ export default defineConfig({
     name: 'BuyWise — Buying Advisor',
     description:
       'AI buying advisor: instant Buy / Consider / Skip verdict from real reviews, deals, and community sentiment.',
-    version: '0.1.0',
+    version: '1.1',
     minimum_chrome_version: '116',
     // Minimal permissions: only what the code actually uses.
     //  - sidePanel: the whole UI; storage: persist keys/prefs/cache locally.
