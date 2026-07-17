@@ -14,6 +14,7 @@ export function sampleVerdict(product: string): Verdict {
     overview: `BuyWise is in demo mode because no OpenAI key is set, so this is a placeholder — not a real analysis of ${product}. Add your key in Settings and BuyWise will research it live from Reddit, YouTube, and the reviews on the page you're viewing.`,
     marketPosition: 'Add an OpenAI key to analyze this product',
     reviewsAnalyzed: 0,
+    keyFacts: [],
     pros: [{ label: 'Real pros appear here once you add your OpenAI key', strength: 0 }],
     cons: [{ label: 'Real cons appear here once you add your OpenAI key', strength: 0 }],
     community: [],
@@ -47,6 +48,14 @@ export const DEMO_VERDICT: Verdict = {
     'Sony’s flagship over-ear headphones refine an already class-leading formula: adaptive ANC, a warmer tuned sound signature, and all-day comfort. Owners and reviewers broadly agree it sets the 2025 benchmark.',
   marketPosition: 'Premium tier · competes with Bose QC Ultra and AirPods Max',
   reviewsAnalyzed: 1284,
+  keyFacts: [
+    { label: 'Price', value: '$399 (launch)', sentiment: 'neutral' },
+    { label: 'Noise cancellation', value: 'Class-leading', sentiment: 'positive' },
+    { label: 'Sound quality', value: 'Warm, balanced', sentiment: 'positive' },
+    { label: 'Comfort & fit', value: 'All-day comfortable', sentiment: 'positive' },
+    { label: 'Battery life', value: '~30h (ANC on)', sentiment: 'positive' },
+    { label: 'Call quality', value: 'Excellent', sentiment: 'positive' },
+  ],
   pros: [
     { label: 'Class-leading noise cancellation', strength: 0.96, mentions: 412 },
     { label: 'Rich, balanced sound signature', strength: 0.89, mentions: 358 },

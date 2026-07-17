@@ -18,7 +18,8 @@ export function Welcome({ onStart }: { onStart?: () => void }) {
         </div>
         <h1 className="text-[26px] font-bold text-white">BuyWise</h1>
         <p className="max-w-[300px] text-sm text-primary-soft">
-          Should you buy it? Get an instant AI verdict from thousands of real reviews — in seconds.
+          Should you buy it? An instant AI verdict on anything — cars, gadgets, clothes, shoes, groceries —
+          from thousands of real reviews, in seconds.
         </p>
       </div>
 

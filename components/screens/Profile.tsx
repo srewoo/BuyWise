@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Wallet, Heart, Clock, ChevronRight, Check } from 'lucide-react';
+import { Wallet, Heart, Clock, ChevronRight, Check, BellRing, BellOff } from 'lucide-react';
 import { BrandBar } from '@/components/Shell';
-import { Card, Eyebrow } from '@/components/ui';
-import { storage, DEFAULT_SETTINGS, type Settings as S } from '@/lib/storage';
+import { Card, Eyebrow, Pill } from '@/components/ui';
+import { storage, DEFAULT_SETTINGS, type Settings as S, type PriceAlert } from '@/lib/storage';
 import { getRegion, detectRegion } from '@/lib/regions';
+
+const fmt = (n: number, c: string) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(n);
 
 const BRAND_OPTIONS = ['Apple', 'Samsung', 'Sony', 'OnePlus', 'Xiaomi', 'Bose', 'Dyson', 'LG', 'Nothing', 'Google'];
 
@@ -26,7 +29,17 @@ const BUDGETS: Record<string, { label: string; v: number }[]> = {
   ],
 };
 
-export function Profile({ history = [] }: { history?: string[] }) {
+export function Profile({
+  history = [],
+  alerts = [],
+  onRemoveAlert,
+  onSearch,
+}: {
+  history?: string[];
+  alerts?: PriceAlert[];
+  onRemoveAlert?: (product: string) => void;
+  onSearch?: (q: string) => void;
+}) {
   const [s, setS] = useState<S>(DEFAULT_SETTINGS);
   useEffect(() => {
     void storage.getSettings().then(setS);
@@ -113,6 +126,52 @@ export function Profile({ history = [] }: { history?: string[] }) {
               : 'Pick a budget and brands above and BuyWise will factor them into every verdict.'}
           </p>
         </Card>
+
+        {/* price alerts */}
+        {alerts.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <Eyebrow>
+              <span className="flex items-center gap-1.5">
+                <BellRing size={12} /> Price alerts
+              </span>
+            </Eyebrow>
+            <div className="mt-1 flex flex-col gap-2">
+              {alerts.map((a) => {
+                const triggered = !!a.triggeredAt;
+                return (
+                  <Card key={a.product} className={triggered ? 'border-buy/30 bg-buy-soft' : ''}>
+                    <div className="flex items-start gap-2.5">
+                      <BellRing size={16} className={`mt-0.5 shrink-0 ${triggered ? 'text-buy' : 'text-primary'}`} />
+                      <button onClick={() => onSearch?.(a.product)} className="flex-1 text-left">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-ink">{a.product}</span>
+                          {triggered && <Pill tone="buy">Target hit</Pill>}
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted">
+                          Notify at/below {fmt(a.targetPrice, a.currency)}
+                          {triggered && a.triggeredPrice != null
+                            ? ` · hit ${fmt(a.triggeredPrice, a.currency)}`
+                            : a.lastPrice != null
+                              ? ` · last ${fmt(a.lastPrice, a.currency)}`
+                              : ''}
+                        </p>
+                      </button>
+                      {onRemoveAlert && (
+                        <button
+                          onClick={() => onRemoveAlert(a.product)}
+                          aria-label={`Remove alert for ${a.product}`}
+                          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted hover:bg-line hover:text-ink"
+                        >
+                          <BellOff size={15} />
+                        </button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* history */}
         {history.length > 0 && (

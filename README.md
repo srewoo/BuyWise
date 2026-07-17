@@ -1,8 +1,10 @@
 # BuyWise — Chrome Extension
 
-A **standalone Chrome extension** (Manifest V3) that acts as an AI buying advisor. Search any
-product and get an instant **Buy / Consider / Skip** verdict with confidence, pros, cons,
-community sentiment by source, deals, a fake-review trust score, Q&A, and alternatives.
+A **standalone Chrome extension** (Manifest V3) that acts as an AI **purchase-research** advisor for
+**anything sold at retail** — a car or a laptop, clothes or shoes, a TV, a home appliance, or a cold
+drink — bought **online or in a physical store**. Search any product and get an instant
+**Buy / Consider / Skip** verdict with confidence, category-aware pros/cons, community sentiment by
+source, deals, a fake-review trust score, Q&A, and alternatives.
 
 - **No backend.** Everything runs in your browser. The side panel calls OpenAI and the live
   sources directly (the extension's `host_permissions` make these cross-origin calls without CORS).
@@ -26,7 +28,15 @@ WXT · React 19 · TypeScript (strict) · Tailwind v4 · Framer Motion · Zustan
 ```
 entrypoints/
   background.ts            one-tab-only persistent side-panel logic + product-detection messaging
-  content.ts               detects products on Amazon/Flipkart pages → prefill
+  content.ts               optional: auto-prefills search from product pages — rich selectors for
+                           Amazon/Flipkart, generic schema.org/OpenGraph reader for other retailers
+                           (search works for any product/category regardless)
+lib/
+  categories.ts            category classifier → per-category forums, expert sites, key-fact labels
+  pageExtract.ts           pure, unit-tested page parsers (site-specific + generic JSON-LD/OG)
+  notify.ts                best-effort desktop notification for triggered price alerts
+  advisor/sources/
+    expertAdapter.ts       category-aware expert/forum evidence via live web search
   sidepanel/               the side-panel React app (App.tsx router over the 13 screens)
 components/
   screens/                 one component per screen (Welcome, Home, Dashboard, …)

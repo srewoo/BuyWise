@@ -4,8 +4,9 @@ import { useApp } from '@/lib/store';
 import { requestAdvice } from '@/lib/messaging';
 import { DEMO_VERDICT } from '@/lib/mock';
 import { storage } from '@/lib/storage';
-import { detectRegion } from '@/lib/regions';
+import { detectRegion, getRegion } from '@/lib/regions';
 import { answerQuestion } from '@/lib/advisor/qa';
+import { recordManualPrice } from '@/lib/advisor/dealInfo';
 import { Welcome } from '@/components/screens/Welcome';
 import { Home } from '@/components/screens/Home';
 import { Analyzing } from '@/components/screens/Analyzing';
@@ -32,6 +33,11 @@ export function App() {
     setQuery,
     setVerdict,
     pushHistory,
+    removeHistory,
+    alerts,
+    loadAlerts,
+    setAlert,
+    removeAlert,
     region,
     coverage,
     sources,
@@ -134,12 +140,17 @@ export function App() {
     void storage.getSettings().then((s) => setRegion(s.region || detectRegion()));
   }, [setRegion]);
 
+  // Load persisted price alerts once so Deals + Profile reflect them.
+  useEffect(() => {
+    loadAlerts();
+  }, [loadAlerts]);
+
   function render(): ReactNode {
     switch (screen) {
       case 'welcome':
         return <Welcome onStart={() => go('home')} />;
       case 'home':
-        return <Home history={history} detected={detected} region={region} onRegionChange={setRegion} onSearch={runSearch} onOpenSettings={() => go('settings')} />;
+        return <Home history={history} detected={detected} region={region} onRegionChange={setRegion} onSearch={runSearch} onRemoveHistory={removeHistory} onOpenSettings={() => go('settings')} />;
       case 'analyzing':
         return <Analyzing query={query || v.product} stage={analyzeStage} />;
       case 'dashboard':
@@ -162,7 +173,25 @@ export function App() {
       case 'community':
         return <Community product={v.product} community={v.community} onBack={back} />;
       case 'deals':
-        return <Deals product={v.product} deals={v.deals} onBack={back} />;
+        return (
+          <Deals
+            product={v.product}
+            deals={v.deals}
+            currency={getRegion(region).currency}
+            alert={alerts.find((a) => a.product.trim().toLowerCase() === v.product.trim().toLowerCase()) ?? null}
+            onRecordPrice={(amount, listPrice) =>
+              recordManualPrice({
+                product: v.product,
+                amount,
+                currency: v.deals.currency || getRegion(region).currency,
+                listPrice,
+              })
+            }
+            onSetAlert={(target) => setAlert(v.product, target, v.deals.currency || getRegion(region).currency)}
+            onRemoveAlert={() => removeAlert(v.product)}
+            onBack={back}
+          />
+        );
       case 'trust':
         return <Trust product={v.product} trust={v.trust} onBack={back} />;
       case 'qa':
@@ -177,11 +206,11 @@ export function App() {
           />
         );
       case 'profile':
-        return <Profile history={history} />;
+        return <Profile history={history} alerts={alerts} onRemoveAlert={removeAlert} onSearch={runSearch} />;
       case 'settings':
         return <Settings onBack={() => go('home')} />;
       default:
-        return <Home history={history} detected={detected} region={region} onRegionChange={setRegion} onSearch={runSearch} onOpenSettings={() => go('settings')} />;
+        return <Home history={history} detected={detected} region={region} onRegionChange={setRegion} onSearch={runSearch} onRemoveHistory={removeHistory} onOpenSettings={() => go('settings')} />;
     }
   }
 

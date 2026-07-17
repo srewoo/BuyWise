@@ -18,6 +18,11 @@ const obj = (properties: Record<string, unknown>) => ({
 const arr = (items: unknown) => ({ type: 'array', items });
 
 const signal = obj({ label: str, detail: strNull, strength: num, mentions: intNull });
+const keyFact = obj({
+  label: str,
+  value: str,
+  sentiment: { type: ['string', 'null'], enum: ['positive', 'neutral', 'negative', null] },
+});
 const sentiment = obj({
   source: { type: 'string', enum: ['reddit', 'youtube', 'retail', 'expert'] },
   label: str,
@@ -65,6 +70,7 @@ export const VERDICT_SCHEMA = obj({
   overview: str,
   marketPosition: str,
   reviewsAnalyzed: int,
+  keyFacts: arr(keyFact),
   pros: arr(signal),
   cons: arr(signal),
   community: arr(sentiment),

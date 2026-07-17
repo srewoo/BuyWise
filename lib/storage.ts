@@ -36,6 +36,20 @@ export const DEFAULT_SETTINGS: Settings = {
 const hasChrome = typeof chrome !== 'undefined' && !!chrome.storage;
 const mem = new Map<string, unknown>();
 
+/** A price watch. There is no backend/price feed, so an alert fires when BuyWise next OBSERVES a
+ *  price (a page price during analysis, or a manually-logged price) at/below the target. */
+export interface PriceAlert {
+  product: string;
+  currency: string;
+  targetPrice: number;
+  createdAt: string;
+  lastPrice?: number;
+  triggeredAt?: string;
+  triggeredPrice?: number;
+}
+
+const normProduct = (q: string) => q.trim().toLowerCase().replace(/\s+/g, ' ');
+
 type Area = 'local' | 'session';
 
 async function get<T>(area: Area, key: string, fallback: T): Promise<T> {
@@ -87,6 +101,63 @@ export const storage = {
     const next = [q, ...h.filter((x) => x !== q)].slice(0, 12);
     await set('local', 'history', next);
     return next;
+  },
+  async removeHistory(q: string): Promise<string[]> {
+    const h = await get<string[]>('local', 'history', []);
+    const next = h.filter((x) => x !== q);
+    await set('local', 'history', next);
+    return next;
+  },
+
+  /* ───────────────────────── Price alerts ───────────────────────── */
+  getAlerts: () => get<PriceAlert[]>('local', 'alerts', []),
+  async findAlert(product: string): Promise<PriceAlert | null> {
+    const key = normProduct(product);
+    return (await this.getAlerts()).find((a) => normProduct(a.product) === key) ?? null;
+  },
+  /** Create or update the alert for a product (resets triggered state on a new target). */
+  async setAlert(product: string, targetPrice: number, currency: string): Promise<PriceAlert> {
+    const alerts = await this.getAlerts();
+    const key = normProduct(product);
+    const existing = alerts.find((a) => normProduct(a.product) === key);
+    const alert: PriceAlert = {
+      product,
+      currency,
+      targetPrice,
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+      lastPrice: existing?.lastPrice,
+    };
+    const next = [alert, ...alerts.filter((a) => normProduct(a.product) !== key)].slice(0, 50);
+    await set('local', 'alerts', next);
+    return alert;
+  },
+  async removeAlert(product: string): Promise<PriceAlert[]> {
+    const key = normProduct(product);
+    const next = (await this.getAlerts()).filter((a) => normProduct(a.product) !== key);
+    await set('local', 'alerts', next);
+    return next;
+  },
+  /**
+   * Record an observed price against any matching alert. Returns the alert ONLY when this
+   * observation newly triggers it (price ≤ target, not already triggered) — so callers can notify.
+   */
+  async checkAlerts(product: string, price: number, currency: string): Promise<PriceAlert | null> {
+    const alerts = await this.getAlerts();
+    const key = normProduct(product);
+    const idx = alerts.findIndex((a) => normProduct(a.product) === key);
+    if (idx < 0) return null;
+    const a = { ...alerts[idx]! };
+    a.lastPrice = price;
+    a.currency = currency || a.currency;
+    let newlyTriggered: PriceAlert | null = null;
+    if (price <= a.targetPrice && !a.triggeredAt) {
+      a.triggeredAt = new Date().toISOString();
+      a.triggeredPrice = price;
+      newlyTriggered = a;
+    }
+    alerts[idx] = a;
+    await set('local', 'alerts', alerts);
+    return newlyTriggered;
   },
   raw: { get, set },
 };

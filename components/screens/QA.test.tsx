@@ -15,8 +15,8 @@ describe('<QA>', () => {
       }),
     );
     render(<QA product="XM6" qa={[]} onAsk={onAsk} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Does it overheat?' }));
-    expect(onAsk).toHaveBeenCalledWith('Does it overheat?');
+    await userEvent.click(screen.getByRole('button', { name: 'Is it worth the price?' }));
+    expect(onAsk).toHaveBeenCalledWith('Is it worth the price?');
     expect(await screen.findByText('No, it does not overheat.')).toBeInTheDocument();
     expect(screen.getByText('r/headphones')).toBeInTheDocument();
   });
@@ -28,5 +28,16 @@ describe('<QA>', () => {
     await userEvent.keyboard('{Enter}');
     expect(onAsk).toHaveBeenCalledWith('is it durable?');
     expect(await screen.findByText('Answer.')).toBeInTheDocument();
+  });
+
+  it('recovers instead of hanging on "Thinking…" when the handler rejects', async () => {
+    const onAsk = vi.fn(async (): Promise<QAItem> => {
+      throw new Error('network down');
+    });
+    render(<QA product="XM6" qa={[]} onAsk={onAsk} />);
+    await userEvent.type(screen.getByPlaceholderText(/ask anything/i), 'will it last?');
+    await userEvent.keyboard('{Enter}');
+    expect(await screen.findByText(/couldn't answer right now/i)).toBeInTheDocument();
+    expect(screen.queryByText('Thinking…')).not.toBeInTheDocument();
   });
 });

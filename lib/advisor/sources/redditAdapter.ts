@@ -2,6 +2,7 @@ import type { ReviewItem } from '@/lib/types';
 import type { SourceAdapter, FetchQuery, FetchResult } from './SourceAdapter';
 import type { Settings } from '@/lib/storage';
 import { getRegion } from '@/lib/regions';
+import { classifyCategory } from '@/lib/categories';
 
 interface RedditChild {
   data: {
@@ -29,7 +30,11 @@ export const redditAdapter: SourceAdapter = {
   async fetch(q: FetchQuery, settings: Settings, signal: AbortSignal): Promise<FetchResult> {
     try {
       const hint = getRegion(settings.region).queryHint;
-      const query = `${q.product} review${hint ? ` ${hint}` : ''}`;
+      // Add one category term ("ownership", "fit", "reliability"…) to raise relevance without
+      // narrowing recall the way a hard subreddit filter would. Category-targeted forum/expert
+      // depth is the expertAdapter's job; Reddit stays the broad, free baseline.
+      const catTerm = classifyCategory(q.product).queryTerms[0] ?? '';
+      const query = `${q.product} review${catTerm ? ` ${catTerm}` : ''}${hint ? ` ${hint}` : ''}`;
       const url =
         `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}` +
         `&sort=top&t=year&limit=${Math.min(q.limit, 25)}`;

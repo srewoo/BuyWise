@@ -38,6 +38,16 @@ export type PriceOffer = z.infer<typeof PriceOffer>;
 export const VerdictDecision = z.enum(['buy', 'consider', 'skip']);
 export type VerdictDecision = z.infer<typeof VerdictDecision>;
 
+/** A category-tuned structured fact a buyer weighs — e.g. car: "Resale value" → "Strong (3-yr ~60%)".
+ *  The label set is driven by the product's category (see lib/categories.ts), so a car surfaces
+ *  mileage/service cost while a shoe surfaces fit/durability, instead of one-size-fits-all prose. */
+export const KeyFact = z.object({
+  label: z.string(),
+  value: z.string(),
+  sentiment: z.enum(['positive', 'neutral', 'negative']).optional(),
+});
+export type KeyFact = z.infer<typeof KeyFact>;
+
 export const Signal = z.object({
   label: z.string(),
   detail: z.string().optional(),
@@ -121,6 +131,8 @@ export const Verdict = z.object({
   overview: z.string(),
   marketPosition: z.string(),
   reviewsAnalyzed: z.number().int(),
+  /** Category-tuned quick facts (mileage/resale for a car, fit/durability for a shoe, …). */
+  keyFacts: z.array(KeyFact).default([]),
   pros: z.array(Signal),
   cons: z.array(Signal),
   community: z.array(SourceSentiment),

@@ -19,7 +19,7 @@ describe('<App> routing', () => {
 
   it('routes to Analyzing when a product is searched', async () => {
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Steam Deck OLED' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Toyota RAV4' }));
     // go('analyzing') fires synchronously before the async advisor call resolves
     expect(await screen.findByText('Analyzing')).toBeInTheDocument();
   });

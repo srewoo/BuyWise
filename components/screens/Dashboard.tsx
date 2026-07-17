@@ -7,6 +7,7 @@ import {
   MessageCircleQuestion,
   Repeat2,
   ChevronRight,
+  ListChecks,
 } from 'lucide-react';
 import { AppBar, Panel } from '@/components/Shell';
 import { Card, Ring, Pill, Eyebrow, CountUp } from '@/components/ui';
@@ -101,6 +102,33 @@ export function Dashboard({
             <Tag size={13} /> {v.marketPosition}
           </div>
         </Card>
+
+        {/* category-tuned key facts — the fields that actually matter for THIS kind of product */}
+        {v.keyFacts && v.keyFacts.length > 0 && (
+          <Card>
+            <Eyebrow>
+              <span className="inline-flex items-center gap-1.5">
+                <ListChecks size={13} /> Key facts
+              </span>
+            </Eyebrow>
+            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+              {v.keyFacts.map((f) => {
+                const tone =
+                  f.sentiment === 'positive'
+                    ? 'text-buy'
+                    : f.sentiment === 'negative'
+                      ? 'text-skip'
+                      : 'text-ink';
+                return (
+                  <div key={f.label} className="flex items-baseline justify-between gap-3 border-b border-line/60 pb-1.5">
+                    <dt className="text-[12px] text-muted">{f.label}</dt>
+                    <dd className={`text-right text-[13px] font-semibold ${tone}`}>{f.value}</dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </Card>
+        )}
 
         {/* sources & grounding — transparency on where the verdict came from */}
         {mode !== 'demo' && (

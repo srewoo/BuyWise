@@ -11,10 +11,10 @@ export default defineConfig({
     plugins: [tailwindcss()],
   }),
   manifest: {
-    name: 'BuyWise — Buying Advisor',
+    name: 'BuyWise - AI Purchase Research Advisor',
     description:
-      'AI buying advisor: instant Buy / Consider / Skip verdict from real reviews, deals, and community sentiment.',
-    version: '1.1',
+      'AI advisor that researches any retail purchase - cars, electronics, clothes, shoes, groceries and more, online or in-store - and gives you a Buy / Consider / Skip verdict from real reviews.',
+    version: '1.2',
     minimum_chrome_version: '116',
     // Minimal permissions: only what the code actually uses.
     //  - sidePanel: the whole UI; storage: persist keys/prefs/cache locally.
@@ -22,7 +22,7 @@ export default defineConfig({
     // tabs APIs (create/query/onActivated/onUpdated/onRemoved). The `tabs` permission only
     // gates privileged props (url/title/pendingUrl/favIconUrl), which we never access.
     // (No `scripting` either — the content script is statically declared via content_scripts.)
-    permissions: ['sidePanel', 'storage'],
+    permissions: ['sidePanel', 'storage', 'notifications'],
     // Only hosts the extension itself fetches from. Amazon/Flipkart are NOT here — the content
     // script reads those pages via its own `matches`, which doesn't need a host permission.
     host_permissions: [

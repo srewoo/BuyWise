@@ -3,8 +3,9 @@ import type { Settings } from '@/lib/storage';
 import { type SourceAdapter, withTimeout } from './sources/SourceAdapter';
 import { redditAdapter } from './sources/redditAdapter';
 import { youtubeAdapter } from './sources/youtubeAdapter';
+import { expertAdapter } from './sources/expertAdapter';
 
-const ADAPTERS: SourceAdapter[] = [redditAdapter, youtubeAdapter];
+const ADAPTERS: SourceAdapter[] = [redditAdapter, youtubeAdapter, expertAdapter];
 
 export interface Coverage {
   source: SourceKind;

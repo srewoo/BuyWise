@@ -1,4 +1,4 @@
-/** Regions the buying advisor supports. Drives currency, retailer list, and
+/** Regions the buying advisor supports. Drives currency, a sample-seller list, and
  * the regional hint appended to source queries + the GPT prompt.
  * Add a new entry here to support another country — nothing else hardcodes regions. */
 export interface Region {
@@ -6,6 +6,9 @@ export interface Region {
   name: string;
   flag: string;
   currency: string; // ISO 4217, used by Intl.NumberFormat
+  /** Illustrative sellers across categories (marketplaces, supermarkets, brand outlets, etc.) —
+   *  a HINT for the model, not a hard allowlist. Products span cars → cold drinks, so the model
+   *  is free to name a dealership, showroom, or specialist store when that fits the category. */
   retailers: string[];
   queryHint: string; // appended to source search queries ('' = none)
   locales: string[]; // navigator.language prefixes for auto-detect
@@ -17,7 +20,7 @@ export const REGIONS: Region[] = [
     name: 'United States',
     flag: '🇺🇸',
     currency: 'USD',
-    retailers: ['Amazon', 'Walmart', 'Best Buy', 'Target'],
+    retailers: ['Amazon', 'Walmart', 'Target', 'Best Buy', 'Costco'],
     queryHint: '',
     locales: ['en-us', 'en'],
   },
@@ -26,7 +29,7 @@ export const REGIONS: Region[] = [
     name: 'India',
     flag: '🇮🇳',
     currency: 'INR',
-    retailers: ['Amazon.in', 'Flipkart', 'Croma', 'Reliance Digital'],
+    retailers: ['Amazon.in', 'Flipkart', 'Reliance Retail', 'Croma', 'DMart'],
     queryHint: 'India',
     locales: ['en-in', 'hi', 'hi-in', 'bn', 'ta', 'te'],
   },

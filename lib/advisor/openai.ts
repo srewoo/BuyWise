@@ -63,9 +63,22 @@ export async function chatJSON<T>({
         throw new OpenAIError(`OpenAI ${res.status}: ${text.slice(0, 200)}`, res.status);
       }
 
-      const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const json = (await res.json()) as {
+        choices?: { message?: { content?: string }; finish_reason?: string }[];
+      };
       const content = json.choices?.[0]?.message?.content;
-      if (!content) throw new OpenAIError('Empty completion');
+      if (!content) {
+        // Almost always finish_reason="length": the token budget was consumed (by reasoning
+        // tokens on reasoning models) before any content was emitted. Retrying the identical
+        // request won't help, so fail fast with an actionable message instead of hanging.
+        const reason = json.choices?.[0]?.finish_reason;
+        throw new OpenAIError(
+          reason === 'length'
+            ? 'Response ran out of tokens before answering — raise maxTokens.'
+            : 'Empty completion',
+          422,
+        );
+      }
       return JSON.parse(content) as T;
     } catch (e) {
       lastErr = e;

@@ -1,7 +1,8 @@
 {
   "name": "buywise",
-  "description": "BuyWise — standalone Chrome extension AI buying advisor (Buy / Consider / Skip)",
-  "version": "1.1",
+  "description": "AI shopping advisor that analyzes product reviews and ratings to tell you what's worth buying - on the product page.",
+  "displayName": "BuyWise - AI Shopping & Review Advisor",
+  "version": "1.2",
   "type": "module",
   "private": true,
   "scripts": {

@@ -9,7 +9,8 @@ import { computeTrust } from './trust';
 import { computeSentiment } from './sentiment';
 import { runAgentic } from './agent';
 import { priceHistory } from '@/lib/priceHistory';
-import { assessDealTruth } from '@/lib/dealTruth';
+import { buildDealInfo } from './dealInfo';
+import { notifyPriceDrop } from '@/lib/notify';
 import { getRegion } from '@/lib/regions';
 import type { DealInfo } from '@/lib/types';
 import type { Settings } from '@/lib/storage';
@@ -56,7 +57,7 @@ export interface SeedReview {
 }
 
 export interface AdviseOptions {
-  /** Reviews read from the page the user is currently on (Amazon/Flipkart). */
+  /** Reviews read from the product page the user is currently on (e.g. Amazon/Flipkart). */
   seedReviews?: SeedReview[];
   pageUrl?: string;
   /** Current price read from the product page (powers real deals + self-built history). */
@@ -68,11 +69,6 @@ export interface AdviseOptions {
   rating?: { average?: number; count?: number };
 }
 
-const shortDate = (iso: string) => {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-};
-
 /** Build Deal Finder data from the real on-page price + self-built history (no fabrication). */
 async function buildDeals(product: string, settings: Settings, opts: AdviseOptions): Promise<DealInfo> {
   const region = getRegion(settings.region);
@@ -80,51 +76,22 @@ async function buildDeals(product: string, settings: Settings, opts: AdviseOptio
     ? await priceHistory.record(product, opts.pagePrice.amount, opts.pagePrice.currency)
     : await priceHistory.get(product);
 
-  if (!tracked || tracked.points.length === 0) {
-    return {
-      offers: [],
-      currency: region.currency,
-      history: [],
-      dropProbability: 0,
-      advice:
-        'No live price captured yet — open this product on its store page (Amazon/Flipkart) so BuyWise can read and start tracking its price.',
-    };
+  // An on-page price is a real observation — satisfy any standing alert for this product.
+  if (opts.pagePrice) {
+    const triggered = await storage.checkAlerts(product, opts.pagePrice.amount, opts.pagePrice.currency);
+    if (triggered) notifyPriceDrop(triggered);
   }
 
-  const pts = tracked.points;
-  const currency = tracked.currency;
-  const current = opts.pagePrice?.amount ?? pts[pts.length - 1]!.price;
-  const lowest = Math.min(...pts.map((p) => p.price));
-  const offers = opts.pagePrice
-    ? [
-        {
-          retailer: opts.retailer ?? region.retailers[0]!,
-          price: current,
-          currency,
-          url: opts.pageUrl ?? '#',
-          inStock: true,
-          isLowest: current <= lowest,
-        },
-      ]
-    : [];
-  const dropProbability = lowest > 0 && current > lowest ? Math.min(0.7, (current - lowest) / current) : 0.05;
-  const advice =
-    current <= lowest
-      ? `This is the lowest price you've tracked (${currency} ${current.toLocaleString()}).`
-      : `${currency} ${current.toLocaleString()} now — ${currency} ${(current - lowest).toLocaleString()} above your lowest tracked price (${currency} ${lowest.toLocaleString()}). History is built from your own visits.`;
-
-  // The "is this sale fake?" verdict — grounded in observed history + the page's claimed MRP.
-  const dealTruth = assessDealTruth(current, pts, opts.pageListPrice, currency);
-
-  return {
-    offers,
-    currency,
-    history: pts.map((p) => ({ t: shortDate(p.t), price: p.price })),
-    lowestEver: lowest,
-    dropProbability,
-    advice,
-    dealTruth,
-  };
+  return buildDealInfo({
+    points: tracked?.points ?? [],
+    currency: tracked?.currency ?? region.currency,
+    current: opts.pagePrice?.amount,
+    listPrice: opts.pageListPrice,
+    retailer: opts.retailer ?? region.retailers[0]!,
+    url: opts.pageUrl,
+    emptyAdvice:
+      "No live price captured yet — open this product's listing on any store page, or tap “Log the price you see” below to enter a shop-tag or showroom price. The verdict above still holds regardless of channel.",
+  });
 }
 
 export async function runAdvisor(

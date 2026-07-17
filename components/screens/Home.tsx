@@ -1,18 +1,16 @@
-import { Search, Clock, TrendingUp, ScanLine, Settings as SettingsIcon } from 'lucide-react';
+import { Search, Clock, ScanLine, X, Settings as SettingsIcon } from 'lucide-react';
 import { BrandBar } from '@/components/Shell';
-import { Card } from '@/components/ui';
 import { RegionPicker } from '@/components/RegionPicker';
 import { AppFooter } from '@/components/Footer';
 import { DEFAULT_REGION } from '@/lib/regions';
 
-const TRENDING = ['iPhone 17 Pro', 'Sony WH-1000XM6', 'Samsung S26 Ultra', 'Dyson V15', 'Steam Deck OLED'];
-
 export function Home({
-  history = ['iPhone 17 Pro', 'Dyson V15', 'LG C4 OLED'],
+  history = ['iPhone 17 Pro', 'Herman Miller Aeron', "Levi's 501"],
   detected = null,
   region = DEFAULT_REGION,
   onRegionChange = () => {},
   onSearch,
+  onRemoveHistory,
   onOpenSettings,
 }: {
   history?: string[];
@@ -20,6 +18,7 @@ export function Home({
   region?: string;
   onRegionChange?: (code: string) => void;
   onSearch?: (q: string) => void;
+  onRemoveHistory?: (q: string) => void;
   onOpenSettings?: () => void;
 }) {
   return (
@@ -42,7 +41,9 @@ export function Home({
       <div className="flex flex-col gap-5 p-4">
         <div>
           <h2 className="text-[22px] font-bold leading-tight text-ink">Should you buy it?</h2>
-          <p className="mt-1 text-sm text-muted">Search any product for an AI-backed verdict.</p>
+          <p className="mt-1 text-sm text-muted">
+            Research anything before you buy — a car, a laptop, shoes, even a cold drink. Online or in-store.
+          </p>
         </div>
 
         {/* search */}
@@ -50,7 +51,7 @@ export function Home({
           <Search size={18} className="text-faint" />
           <input
             autoFocus
-            placeholder="e.g. Sony WH-1000XM6"
+            placeholder="e.g. Toyota RAV4, Nike Pegasus 41, or Coca-Cola Zero"
             className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
             onKeyDown={(e) => e.key === 'Enter' && onSearch?.((e.target as HTMLInputElement).value)}
           />
@@ -79,34 +80,27 @@ export function Home({
             <Clock size={14} /> Recent
           </p>
           {history.map((h) => (
-            <button
+            <div
               key={h}
-              onClick={() => onSearch?.(h)}
-              className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left hover:bg-surface"
+              className="group flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-surface"
             >
-              <span className="text-sm text-ink">{h}</span>
-              <Search size={14} className="text-faint" />
-            </button>
+              <button onClick={() => onSearch?.(h)} className="flex-1 text-left text-sm text-ink">
+                {h}
+              </button>
+              {onRemoveHistory ? (
+                <button
+                  onClick={() => onRemoveHistory(h)}
+                  aria-label={`Remove ${h} from recent searches`}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-faint opacity-0 transition hover:bg-line hover:text-ink focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <X size={14} />
+                </button>
+              ) : (
+                <Search size={14} className="text-faint" />
+              )}
+            </div>
           ))}
         </div>
-
-        {/* trending */}
-        <Card className="bg-surface" pad>
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-muted">
-            <TrendingUp size={14} /> Trending now
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {TRENDING.map((t) => (
-              <button
-                key={t}
-                onClick={() => onSearch?.(t)}
-                className="rounded-full border border-line bg-bg px-3 py-1.5 text-xs font-medium text-ink hover:border-primary hover:text-primary"
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </Card>
       </div>
       <AppFooter />
     </div>

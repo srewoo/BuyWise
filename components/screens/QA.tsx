@@ -4,7 +4,8 @@ import { AppBar, Panel, Body } from '@/components/Shell';
 import { Card, SourceIcon } from '@/components/ui';
 import type { QAItem } from '@/lib/types';
 
-const SUGGESTED = ['Does it overheat?', 'Battery after 1 year?', 'Worth upgrading?', 'Good for daily use?'];
+// Category-neutral prompts — work for a car, a laptop, shoes, or a cold drink alike.
+const SUGGESTED = ['Is it worth the price?', 'Any common problems?', 'How does it compare to rivals?', 'Good for daily use?'];
 
 export function QA({
   product,
@@ -27,7 +28,13 @@ export function QA({
     setDraft('');
     setBusy(true);
     setItems((prev) => [...prev, { question: q, answer: '', citations: [] }]); // optimistic
-    const res = await onAsk(q);
+    let res: QAItem;
+    try {
+      res = await onAsk(q);
+    } catch {
+      // Never leave the optimistic bubble stuck on "Thinking…" if the handler rejects.
+      res = { question: q, answer: "Couldn't answer right now. Please try again.", citations: [] };
+    }
     setItems((prev) => {
       const next = [...prev];
       next[next.length - 1] = res;
@@ -53,7 +60,7 @@ export function QA({
                     {pending ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                   </span>
                   <p className="text-[13px] leading-relaxed text-ink/85">
-                    {pending ? 'Thinking…' : item.answer}
+                    {pending ? 'Thinking…' : item.answer || 'No answer returned. Please try again.'}
                   </p>
                 </div>
                 {item.citations.length > 0 && (

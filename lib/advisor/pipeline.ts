@@ -2,14 +2,29 @@ import { Verdict } from '@/lib/types';
 import type { Settings } from '@/lib/storage';
 import type { ReviewItem } from '@/lib/types';
 import { getRegion } from '@/lib/regions';
+import { classifyCategory } from '@/lib/categories';
 import { chatJSON } from './openai';
 import { VERDICT_SCHEMA } from './schema';
 
-const SYSTEM = `You are BuyWise, an expert, brutally honest product-buying advisor.
-Given a product and (optionally) real reviews/discussions collected from Reddit and YouTube,
+const SYSTEM = `You are BuyWise, an expert, brutally honest purchase-research advisor.
+You research ANY retail purchase a person can make in the public domain — not just online electronics.
+That includes phones, laptops, TVs, headphones and gadgets, but equally cars and vehicles, clothing,
+footwear, watches and accessories, home appliances, furniture, kitchenware, beauty and personal-care,
+groceries, packaged food and beverages (down to a cold drink), toys, sports gear, tools, and more —
+whether bought online OR in a physical store/showroom/dealership.
+Given a product and (optionally) real reviews/discussions collected from the web and communities,
 produce a single structured verdict.
 
 Rules:
+- First infer the product's CATEGORY and set the "category" field. Let the category shape everything
+  below — the questions a buyer asks about a car (resale value, mileage, service cost, on-road price)
+  differ from a laptop (performance, battery, ports), a cold drink (taste, sugar, price-per-litre),
+  a pair of shoes (fit, durability, comfort), or a sofa (build, fabric, warranty). Judge each product
+  on the criteria that actually matter for ITS category.
+- keyFacts: 4-6 category-tuned quick facts a buyer actually weighs, each a short label + concrete
+  value (+ optional sentiment). Use the SUGGESTED FIELDS for the category as your guide, filling the
+  value from the evidence/knowledge (say "Unknown" if genuinely unavailable). This is where a car
+  shows mileage/resale/service cost and a shoe shows fit/durability — structured, not buried in prose.
 - decision is "buy", "consider", or "skip". confidence is 0..1.
 - Ground every claim in the supplied evidence when present. If little/no evidence is supplied,
   use general knowledge but LOWER the confidence and say so in the overview.
@@ -17,9 +32,14 @@ Rules:
 - community: one entry per source you actually have signal for (reddit/youtube/retail/expert);
   positive+neutral+negative must sum to ~1; sampleSize is your best estimate of how many opinions.
 - trust: estimate authenticity 0..100 and a plausible breakdown of filtered low-trust reviews.
-- deals: best-effort APPROXIMATE current prices by major retailer (USD) — these are estimates, say so
-  in advice; include a short price history and a 0..1 dropProbability.
-- alternatives: 2-3 with a distinct angle ("Best value", "Best camera", etc.).
+- deals: best-effort APPROXIMATE current price in the buyer's currency, using the price form that fits
+  the category — a sticker/on-road price for a car, MRP or per-unit/per-litre price for groceries and
+  beverages, typical store/online price for apparel, electronics, or appliances. Name whichever sellers
+  are realistic for the category (dealerships, brand stores, supermarkets, or online marketplaces — not
+  only electronics retailers). These are estimates, say so in advice; include a short price history and
+  a 0..1 dropProbability.
+- alternatives: 2-3 with a distinct angle chosen for the category ("Best value", "Cheaper rival",
+  "More premium", "Best fuel economy", "Better fit", "Healthier option", etc.).
 - qa: 2-4 common buyer questions answered from the evidence, each citing the sources used.
 Be concise and specific. No marketing fluff.`;
 
@@ -58,6 +78,7 @@ export async function runPipeline(
   pageContext = '',
 ): Promise<Verdict> {
   const region = getRegion(settings.region);
+  const category = classifyCategory(product);
   const grounding = settings.deepResearch
     ? 'DEEP RESEARCH MODE: base every pro, con, and community claim ONLY on the evidence below; do not invent reviews. If evidence is thin, lower confidence and say so.'
     : '';
@@ -66,7 +87,8 @@ export async function runPipeline(
       ? `Buyer preferences — ${settings.budgetMax ? `budget up to ${region.currency} ${settings.budgetMax}` : 'no strict budget'}; prefers brands: ${settings.brands.length ? settings.brands.join(', ') : 'no preference'}. Weight value-for-money and these brands. If the product clearly exceeds the budget, lean toward "consider"/"skip" and prioritise a cheaper option in alternatives. Reflect this in the verdict and oneLiner.`
       : '';
   const user = `Product: ${product}
-${pageContext ? `PAGE CONTEXT (authoritative): ${pageContext}\n` : ''}Market: ${region.name} — quote all prices in ${region.currency} and use only these retailers for deals: ${region.retailers.join(', ')}. ${pageContext ? '' : `If the product isn't sold in ${region.name}, say so and lean toward "skip".`}
+Likely category: ${category.label}. SUGGESTED FIELDS for keyFacts (adapt as needed): ${category.keyFactLabels.join(', ')}.
+${pageContext ? `PAGE CONTEXT (authoritative): ${pageContext}\n` : ''}Market: ${region.name} — quote all prices in ${region.currency}. For deals, name whichever sellers are realistic for this product's category (e.g. ${region.retailers.join(', ')}, plus dealerships, brand outlets, supermarkets, or specialist stores as appropriate). ${pageContext ? '' : `If the product genuinely isn't sold or available in ${region.name}, say so and lean toward "skip".`}
 Deep research: ${settings.deepResearch ? 'yes' : 'no'}
 ${grounding}
 ${prefs}

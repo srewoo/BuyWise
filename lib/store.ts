@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Verdict, Citation } from '@/lib/types';
 import type { Coverage } from '@/lib/advisor/orchestrator';
-import { storage } from '@/lib/storage';
+import { storage, type PriceAlert } from '@/lib/storage';
 import { DEFAULT_REGION } from '@/lib/regions';
 
 export type Screen =
@@ -26,6 +26,7 @@ interface AppState {
   query: string;
   verdict: Verdict | null;
   history: string[];
+  alerts: PriceAlert[];
   mode: AdviseMode;
   error: string | null;
   analyzeStage: string;
@@ -37,6 +38,10 @@ interface AppState {
   setQuery: (q: string) => void;
   setVerdict: (v: Verdict | null) => void;
   pushHistory: (q: string) => void;
+  removeHistory: (q: string) => void;
+  loadAlerts: () => void;
+  setAlert: (product: string, targetPrice: number, currency: string) => void;
+  removeAlert: (product: string) => void;
   setMode: (m: AdviseMode) => void;
   setError: (e: string | null) => void;
   setAnalyzeStage: (s: string) => void;
@@ -48,7 +53,8 @@ export const useApp = create<AppState>((set) => ({
   screen: 'home',
   query: '',
   verdict: null,
-  history: ['iPhone 17 Pro', 'Dyson V15', 'LG C4 OLED'],
+  history: ['iPhone 17 Pro', 'Toyota RAV4', "Levi's 501"],
+  alerts: [],
   mode: null,
   error: null,
   analyzeStage: 'collecting',
@@ -61,6 +67,19 @@ export const useApp = create<AppState>((set) => ({
   setVerdict: (verdict) => set({ verdict }),
   pushHistory: (q) =>
     set((s) => ({ history: [q, ...s.history.filter((h) => h !== q)].slice(0, 8) })),
+  removeHistory: (q) => {
+    set((s) => ({ history: s.history.filter((h) => h !== q) }));
+    void storage.removeHistory(q);
+  },
+  loadAlerts: () => {
+    void storage.getAlerts().then((alerts) => set({ alerts }));
+  },
+  setAlert: (product, targetPrice, currency) => {
+    void storage.setAlert(product, targetPrice, currency).then(() => storage.getAlerts()).then((alerts) => set({ alerts }));
+  },
+  removeAlert: (product) => {
+    void storage.removeAlert(product).then((alerts) => set({ alerts }));
+  },
   setMode: (mode) => set({ mode }),
   setError: (error) => set({ error }),
   setAnalyzeStage: (analyzeStage) => set({ analyzeStage }),
