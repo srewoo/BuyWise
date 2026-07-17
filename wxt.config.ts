@@ -13,7 +13,7 @@ export default defineConfig({
   manifest: {
     name: 'BuyWise - AI Purchase Research Advisor',
     description:
-      'AI advisor that researches any retail purchase - cars, electronics, clothes, shoes, groceries and more, online or in-store - and gives you a Buy / Consider / Skip verdict from real reviews.',
+      'AI advisor that researches any retail purchase online or in-store and gives you a Buy / Consider / Skip verdict from real reviews.',
     version: '1.2',
     minimum_chrome_version: '116',
     // Minimal permissions: only what the code actually uses.
