@@ -1,6 +1,6 @@
 {
   "name": "buywise",
-  "description": "AI shopping advisor that analyzes product reviews and ratings to tell you what's worth buying - on the product page.",
+  "description": "AI shopping advisor that analyzes product reviews and ratings to tell you what's worth buying.",
   "displayName": "BuyWise - AI Shopping & Review Advisor",
   "version": "1.2",
   "type": "module",
